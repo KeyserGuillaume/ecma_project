@@ -2,111 +2,128 @@
 
 ILOSTLBEGIN
 
-int main (void) {
+int main (void){
     IloEnv env;
-    char filename[] = "../data/10_ulysses_9.tsp";
+//    char filename[] = "../data/10_ulysses_9.tsp";
+    char filename[] = "../data/22_ulysses_3.tsp";
+//    char filename[] = "../data/52_berlin_6.tsp";
     Instance I(env, filename);
     IloModel model(env);
 
-    try {
-        IloArray<IloBoolVarArray> x(env, I.n);
-        for (unsigned int i = 0; i < I.n; i++)
-            x[i] = IloBoolVarArray(env, I.K);
+    IloArray<IloBoolVarArray> x(env, I.n);
+    for (unsigned int i = 0; i < I.n; i++)
+        x[i] = IloBoolVarArray(env, I.K);
 
-        IloArray<IloBoolVarArray> y(env, I.n);
-        for (unsigned int i = 0; i < I.n; i++)
-            y[i] = IloBoolVarArray(env, I.n);
+    IloArray<IloBoolVarArray> y(env, I.n);
+    for (unsigned int i = 0; i < I.n; i++)
+        y[i] = IloBoolVarArray(env, I.n);
 
-        IloArray<IloNumVarArray> z(env, I.n);
-        for (unsigned int i = 0; i < I.n; i++)
-            z[i] = IloNumVarArray(env, I.n);
+    IloArray<IloNumVarArray> z(env, I.n);
+    for (unsigned int i = 0; i < I.n; i++)
+        z[i] = IloNumVarArray(env, I.n);
 
-        IloNumVar a(env, 0.0, IloInfinity);
-        IloNumVar b(env, 0.0, IloInfinity);
-        IloNumVarArray s(env, I.n);
+    IloArray<IloNumVarArray> s(env, I.n);
+    for (unsigned int i = 0; i < I.n; i++)
+        s[i] = IloNumVarArray(env, I.K);
 
-        for (unsigned int j = 0; j < I.n; j++) {
-            for (unsigned int i = 0; i < I.n; i++) {
-                z[i][j] = IloNumVar(env, 0.0 , IloInfinity);
-            }
-            s[j] = IloNumVar(env, 0.0 , IloInfinity);
+    IloNumVar a(env, 0.0, IloInfinity);
+
+    IloNumVarArray b(env, I.K);
+    for (unsigned int k = 0; k < I.K; k++)
+        b[k] = IloNumVar(env, 0.0 , IloInfinity);
+
+    for(unsigned int i = 0; i < I.n; i++){
+        for (unsigned int j = i + 1; j < I.n; j++){
+            z[i][j] = IloNumVar(env, 0.0 , IloInfinity);
         }
+        for (unsigned int k = 0; k < I.K; k++)
+            s[i][k] = IloNumVar(env, 0.0 , IloInfinity);
+    }
 
-        // objective
-        IloExpr obj(env);
-        for (unsigned int j = 0; j < I.n; j++) {
-            for(unsigned int i = 0; i < I.n; i++) {
-                obj += 3 * z[i][j];
-                obj += y[i][j] * I.l[i][j];
-            }
+    // objective
+    IloExpr obj(env);
+    for(unsigned int i = 0; i < I.n; i++){
+        for (unsigned int j = i + 1; j < I.n; j++){
+            obj += 3 * z[i][j];
+            obj += y[i][j] * I.l[i][j];
         }
-        obj += a * I.L;
-        model.add(IloMinimize(env, obj));
+    }
+    obj += a * I.L;
+    model.add(IloMinimize(env, obj));
+    obj.end();
+
+    // constraints
+    for(unsigned int i = 0; i < I.n; i++){
+        for (unsigned int j = i + 1; j < I.n; j++){
+            for (unsigned int k = 0; k < I.K; k++){
+                model.add(y[i][j] >= x[i][k] + x[j][k] - 1);
+            }
+            model.add(a + z[i][j] >= (I.lh[i] + I.lh[j]) * y[i][j]);
+        }
+        for (unsigned int k = 0; k < I.K; k++)
+            model.add(b[k] + s[i][k] >= x[i][k] * I.w_v[i]);
+    }
+    for (unsigned int k = 0; k < I.K; k++){
+        obj = IloExpr(env);
+        obj += b[k] * I.W;
+        for (unsigned int i = 0; i < I.n; i++){
+            obj += s[i][k] * I.W_v[i] + x[i][k] * I.w_v[i];
+        }
+        model.add(obj <= I.B);
         obj.end();
-
-        // constraints
-        for(unsigned int i = 0; i < I.n; i++) {
-            for (unsigned int j = 0; j < I.n; j++) {
-                for (unsigned int k = 0; k < I.K; k++){
-                    model.add(y[i][j] >= x[i][k] + x[j][k] - 1);
-                }
-                model.add(a + z[i][j] >= (I.lh[i] + I.lh[j]) * y[i][j]);
-            }
-            for (unsigned int k = 0; k < I.K; k++)
-                model.add(b + s[i] >= x[i][k] * I.w_v[i]);
-        }
+    }
+    for (unsigned int i = 0; i < I.n; i++){
+        obj = IloExpr(env);
         for (unsigned int k = 0; k < I.K; k++){
-            obj = IloExpr(env);
-            obj += b * I.W;
-            for (unsigned int i = 0; i < I.n; i ++) {
-                obj += s[i] * I.W_v[i];
-                obj += x[i][k] * I.w_v[i];
-            }
-            model.add(obj <= I.B);
-            obj.end();
+            obj += x[i][k];
         }
-        for (unsigned int k = 0; k < I.K; k++){
-            obj = IloExpr(env);
-            for (unsigned int i = 0; i < I.n; i ++) {
-                obj += x[i][k];
-            }
-            model.add(obj == 1);
-            obj.end();
-        }
+        model.add(obj == 1);
+        obj.end();
+    }
 
 
-        // ******************
-        // Resolution
-        // ******************
-        IloCplex cplex(model);
-        cplex.solve();
+    // ******************
+    // Resolution
+    // ******************
+    IloCplex cplex(model);
+    cplex.solve();
 
-        // ******************
-        // Affichage des resultats
-        // ******************
+    // ******************
+    // Affichage des resultats
+    // ******************
 
-        // Si le resultat est infaisable
-        if (cplex.getStatus() == IloAlgorithm::Infeasible)
-            cout << "No Solution" << endl;
+    // Si le resultat est infaisable
+    if (cplex.getStatus() == IloAlgorithm::Infeasible)
+        std::cout << "No Solution" << std::endl;
 
-            // Si le resultat est faisable
-        else{
+        // Si le resultat est faisable
+    else{
 
-            // Afficher la valeur de l'objectif
-            cout << "objective: " << cplex.getObjValue() << endl;
+        // Afficher la valeur de l'objectif
+        std::cout << "objective: " << cplex.getObjValue() << std::endl;
 //
-//            cout << "x: ";
-//            for (int i = 0; i < n; i++)
-//                cout << cplex.getValue(x[i]) << ", ";
-//            cout << endl;
+        std::cout << "x: " << std::endl;
+        for (unsigned int i = 0; i < I.n; i++){
+            for (unsigned int k = 0; k < I.K; k++)
+                std::cout << (unsigned int)(cplex.getValue(x[i][k])) << ", ";
+            std::cout << std::endl;
         }
 
-    }
-    catch (IloException& e) {
-        cerr << "Concert exception caught: " << e << endl;
-    }
-    catch (...) {
-        cerr << "Unknown exception caught" << endl;
+        std::cout << "y: " << std::endl;
+        for (unsigned int i = 0; i < I.n; i++){
+            for (unsigned int j = 0; j < I.n; j++){
+                if (i < j)
+                    std::cout << (unsigned int)(cplex.getValue(y[i][j])) << ", ";
+                else
+                    std::cout << " , ";
+            }
+            std::cout << std::endl;
+        }
+
+        std::cout << "a: " << cplex.getValue(a) << std::endl;
+
+        std::cout << std::endl;
+//        I.print_distances();
     }
 
     env.end();

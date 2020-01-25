@@ -1,6 +1,6 @@
 #include "Instance.h"
 
-Instance::Instance(const IloEnv &env, char *filename) {
+Instance::Instance(const IloEnv &env, char *filename){
     char readChar;
     int readInt;
     float readFloat, readFloat2;
@@ -45,7 +45,7 @@ Instance::Instance(const IloEnv &env, char *filename) {
 //        std::cout << coordinates[9].second << std::endl;
 
     l = IloArray<IloNumArray>(env);
-    for (unsigned int i = 0; i < n; i++) {
+    for (unsigned int i = 0; i < n; i++){
         l.add(IloNumArray(env));
         for (unsigned int j = 0; j < n; j++)
             l[i].add(sqrt(pow(coordinates[i].first - coordinates[j].first, 2) + pow(coordinates[i].second - coordinates[j].second, 2)));
@@ -53,4 +53,19 @@ Instance::Instance(const IloEnv &env, char *filename) {
 
     file.close();
 
+}
+
+void Instance::print_distances() const {
+    // not beautiful
+    std::cout << "distances: " << std::endl;
+    for (unsigned int i = 0; i < n; i++){
+        for (unsigned int j = 0; j < n; j++){
+            if (i < j)
+                std::cout << l[i][j] << ", ";
+            else
+                std::cout << " , ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
 }

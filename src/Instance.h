@@ -21,4 +21,5 @@ public:
     std::vector<std::pair<float, float> > coordinates;
 
     Instance(const IloEnv &env, char filename[]);
+    void print_distances() const;
 };
