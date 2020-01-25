@@ -29,8 +29,8 @@ Instance::Instance(const IloEnv &env, char *filename){
     lh = IloNumArray(env);
     file >> readChar >> readChar >> readChar >> readChar;
     for (unsigned int i = 0; i < n; i++){
-        file >> readChar >> readInt;
-        lh.add(readInt);
+        file >> readChar >> readFloat;
+        lh.add(readFloat);
     }
 
     coordinates = std::vector<std::pair<float, float> >(0);

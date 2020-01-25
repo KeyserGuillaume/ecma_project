@@ -16,7 +16,7 @@ find_package(Cplex)
 include_directories(SYSTEM ${CPLEX_INCLUDE_DIRS})
 
 set(SOURCE_FILES
-        src/main.cpp src/Instance.cpp src/Instance.h)
+        src/main.cpp src/Instance.cpp src/Instance.h src/Dualization.cpp src/Dualization.h src/cutting_plane.cpp src/cutting_plane.h)
 
 add_executable(         ecma ${SOURCE_FILES})
 target_link_libraries(  ecma PRIVATE ${CPLEX_LIBRARIES})
