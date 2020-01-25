@@ -9,17 +9,25 @@ int main (void) {
     IloModel model(env);
 
     try {
+        IloArray<IloBoolVarArray> x(env, I.n);
+        for (unsigned int i = 0; i < I.n; i++)
+            x[i] = IloBoolVarArray(env, I.K);
 
-        IloBoolVarArray x(env, I.K * I.n);
-        IloBoolVarArray y(env, I.n * I.n);
+        IloArray<IloBoolVarArray> y(env, I.n);
+        for (unsigned int i = 0; i < I.n; i++)
+            y[i] = IloBoolVarArray(env, I.n);
+
+        IloArray<IloNumVarArray> z(env, I.n);
+        for (unsigned int i = 0; i < I.n; i++)
+            z[i] = IloNumVarArray(env, I.n);
+
         IloNumVar a(env, 0.0, IloInfinity);
-        IloNumVarArray z(env, I.n * I.n);
         IloNumVar b(env, 0.0, IloInfinity);
         IloNumVarArray s(env, I.n);
 
         for (unsigned int j = 0; j < I.n; j++) {
             for (unsigned int i = 0; i < I.n; i++) {
-                z[i + I.n * j] = IloNumVar(env, 0.0 , IloInfinity);
+                z[i][j] = IloNumVar(env, 0.0 , IloInfinity);
             }
             s[j] = IloNumVar(env, 0.0 , IloInfinity);
         }
@@ -28,8 +36,8 @@ int main (void) {
         IloExpr obj(env);
         for (unsigned int j = 0; j < I.n; j++) {
             for(unsigned int i = 0; i < I.n; i++) {
-                obj += 3 * z[i + I.n * j];
-                obj += y[i + I.n * j] * I.l[i + I.n * j];
+                obj += 3 * z[i][j];
+                obj += y[i][j] * I.l[i][j];
             }
         }
         obj += a * I.L;
@@ -40,19 +48,19 @@ int main (void) {
         for(unsigned int i = 0; i < I.n; i++) {
             for (unsigned int j = 0; j < I.n; j++) {
                 for (unsigned int k = 0; k < I.K; k++){
-                    model.add(y[i + I.n * j] >= x[i * I.K + k] + x[j * I.K + k] - 1);
+                    model.add(y[i][j] >= x[i][k] + x[j][k] - 1);
                 }
-                model.add(a + z[i + I.n * j] >= (I.lh[i] + I.lh[j]) * y[i + I.n * j]);
+                model.add(a + z[i][j] >= (I.lh[i] + I.lh[j]) * y[i][j]);
             }
             for (unsigned int k = 0; k < I.K; k++)
-                model.add(b + s[i] >= x[i * I.K + k] * I.w_v[i]);
+                model.add(b + s[i] >= x[i][k] * I.w_v[i]);
         }
         for (unsigned int k = 0; k < I.K; k++){
             obj = IloExpr(env);
             obj += b * I.W;
             for (unsigned int i = 0; i < I.n; i ++) {
                 obj += s[i] * I.W_v[i];
-                obj += x[i * I.K + k] * I.w_v[i];
+                obj += x[i][k] * I.w_v[i];
             }
             model.add(obj <= I.B);
             obj.end();
@@ -60,7 +68,7 @@ int main (void) {
         for (unsigned int k = 0; k < I.K; k++){
             obj = IloExpr(env);
             for (unsigned int i = 0; i < I.n; i ++) {
-                obj += x[i * I.K + k];
+                obj += x[i][k];
             }
             model.add(obj == 1);
             obj.end();

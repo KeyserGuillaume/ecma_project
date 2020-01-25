@@ -6,8 +6,6 @@
 
 #include <ilcplex/ilocplex.h>
 
-typedef IloArray<IloNumArray> DataMatrix;
-
 class Instance {
 public:
     IloInt n;
@@ -18,8 +16,8 @@ public:
 
     IloNumArray w_v;
     IloNumArray W_v;
-    IloNumArray l;
     IloNumArray lh;
+    IloArray<IloNumArray> l;
     std::vector<std::pair<float, float> > coordinates;
 
     Instance(const IloEnv &env, char filename[]);

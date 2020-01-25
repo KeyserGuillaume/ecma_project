@@ -44,10 +44,12 @@ Instance::Instance(const IloEnv &env, char *filename) {
 //        std::cout << coordinates[0].first << std::endl;
 //        std::cout << coordinates[9].second << std::endl;
 
-    l = IloNumArray(env);
-    for (unsigned int i = 0; i < n; i++)
+    l = IloArray<IloNumArray>(env);
+    for (unsigned int i = 0; i < n; i++) {
+        l.add(IloNumArray(env));
         for (unsigned int j = 0; j < n; j++)
-            l.add(sqrt(pow(coordinates[i].first - coordinates[j].first, 2) + pow(coordinates[i].second - coordinates[j].second, 2)));
+            l[i].add(sqrt(pow(coordinates[i].first - coordinates[j].first, 2) + pow(coordinates[i].second - coordinates[j].second, 2)));
+    }
 
     file.close();
 
