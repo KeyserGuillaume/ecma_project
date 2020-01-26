@@ -2,6 +2,7 @@
 #include "Dualization.h"
 #include "cutting_plane.h"
 #include "branch_cut.h"
+#include "heuristic.h"
 
 #include <iostream>
 
@@ -28,7 +29,7 @@ int main (int argc, char* argv[]){
    } else if (method == "BRANCH_AND_CUT") {
       solve_problem_with_branch_cut(env, I);
    } else if (method == "HEURISTIC") {
-
+      solve_problem_with_heuristic(env, I);
    } else {
       std::cout << "First parameter should be DUAL or CUTTING_PLANES or BRANCH_AND_CUT or HEURISTIC, not " << method << std::endl;
    }

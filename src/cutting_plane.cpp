@@ -60,7 +60,7 @@ void solve_problem_with_cutting_planes(IloEnv &env, const Instance &I) {
             return;
         }
         obj = master_cplex.getObjValue();
-        std::cout << "\tIter " << iter << "\t Obj " << master_cplex.getObjValue() << std::endl;
+        // std::cout << "\tIter " << iter << "\t Obj " << master_cplex.getObjValue() << std::endl;
 
         for (unsigned int i=0; i<I.n; i++) {
             for (unsigned int j=i+1; j<I.n; j++) {
@@ -79,7 +79,7 @@ void solve_problem_with_cutting_planes(IloEnv &env, const Instance &I) {
         if (enriching1) {// set by line above
             U1.push_back(delta1);
             enriching = true;
-            std::cout << "Adding U1" << std::endl;
+            // std::cout << "Adding U1" << std::endl;
         }
 
         for (unsigned int k=0; k<I.K;k++) {
@@ -88,7 +88,7 @@ void solve_problem_with_cutting_planes(IloEnv &env, const Instance &I) {
             if (enriching2) { // set by line above
                 U2.push_back(delta2);
                 enriching = true;
-                std::cout << "Adding U2" << std::endl;
+                // std::cout << "Adding U2" << std::endl;
             }
         }
         iter++;

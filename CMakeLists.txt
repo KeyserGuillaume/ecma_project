@@ -19,6 +19,7 @@ set(SOURCE_FILES
         src/main.cpp src/Instance.cpp src/Instance.h
         src/Dualization.cpp src/Dualization.h
         src/branch_cut.cpp src/branch_cut.h
+        src/heuristic.cpp src/heuristic.h
         src/cutting_plane.cpp src/cutting_plane.h)
 
 add_executable(         ecma ${SOURCE_FILES})

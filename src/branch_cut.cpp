@@ -82,9 +82,10 @@ void solve_problem_with_branch_cut(IloEnv &env, const Instance &I) {
 
   IloModel master_model = get_master_model(env, I, U1, U2, master_var);
   IloCplex master_cplex(master_model);
+  master_cplex.setParam(IloCplex::TiLim, 30);
   IloCplex::LazyConstraintCallbackI* cb = new SlaveCallback(env, master_var, I);
   master_cplex.use(cb);
-  // master_cplex.setOut(env.getNullStream()); // tell cplex to be silent
+  master_cplex.setOut(env.getNullStream()); // tell cplex to be silent
   master_cplex.solve();
   if (master_cplex.getStatus() == IloAlgorithm::Infeasible) {
       std::cout << "No Solution" << std::endl;

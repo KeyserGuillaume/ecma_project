@@ -77,6 +77,10 @@ void solve_dualized_problem(IloEnv &env, const Instance &I) {
 
     // solve
     IloCplex cplex(model);
+    cplex.setParam(IloCplex::TiLim, 30);
+
+    cplex.setOut(env.getNullStream()); // tell cplex to be silent
+
     cplex.solve();
 
     // print stuff
@@ -87,26 +91,26 @@ void solve_dualized_problem(IloEnv &env, const Instance &I) {
 
     // Afficher la valeur de l'objectif
     std::cout << "Solved objective: " << cplex.getObjValue() << std::endl;
-
-    std::cout << "x: " << std::endl;
-    for (unsigned int i = 0; i < I.n; i++) {
-        for (unsigned int k = 0; k < I.K; k++)
-            std::cout << (unsigned int) (cplex.getValue(x[i][k])) << ", ";
-        std::cout << std::endl;
-    }
-
-    std::cout << "y: " << std::endl;
-    for (unsigned int i = 0; i < I.n; i++) {
-        for (unsigned int j = 0; j < I.n; j++) {
-            if (i < j)
-                std::cout << (unsigned int) (cplex.getValue(y[i][j])) << ", ";
-            else
-                std::cout << " , ";
-        }
-        std::cout << std::endl;
-    }
-
-    std::cout << "a: " << cplex.getValue(a) << std::endl;
+    //
+    // std::cout << "x: " << std::endl;
+    // for (unsigned int i = 0; i < I.n; i++) {
+    //     for (unsigned int k = 0; k < I.K; k++)
+    //         std::cout << (unsigned int) (cplex.getValue(x[i][k])) << ", ";
+    //     std::cout << std::endl;
+    // }
+    //
+    // std::cout << "y: " << std::endl;
+    // for (unsigned int i = 0; i < I.n; i++) {
+    //     for (unsigned int j = 0; j < I.n; j++) {
+    //         if (i < j)
+    //             std::cout << (unsigned int) (cplex.getValue(y[i][j])) << ", ";
+    //         else
+    //             std::cout << " , ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+    //
+    // std::cout << "a: " << cplex.getValue(a) << std::endl;
 
     std::cout << std::endl;
 //    I.print_distances();
