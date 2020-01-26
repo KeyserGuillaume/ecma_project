@@ -1,6 +1,6 @@
 #include "Instance.h"
 
-Instance::Instance(const IloEnv &env, char *filename){
+Instance::Instance(const IloEnv &env, const char *filename){
     char readChar;
     int readInt;
     float readFloat, readFloat2;

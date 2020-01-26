@@ -86,7 +86,7 @@ void solve_dualized_problem(IloEnv &env, const Instance &I) {
     }
 
     // Afficher la valeur de l'objectif
-    std::cout << "objective: " << cplex.getObjValue() << std::endl;
+    std::cout << "Solved objective: " << cplex.getObjValue() << std::endl;
 
     std::cout << "x: " << std::endl;
     for (unsigned int i = 0; i < I.n; i++) {

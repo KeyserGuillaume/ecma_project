@@ -30,4 +30,4 @@ IloArray<IloNumArray> solve_slave_problem_1(const IloEnv &env, IloCplex master_c
                                             bool& need_to_enrich);
 IloNumArray solve_slave_problem_2(const IloEnv &env, IloCplex master_cplex, const Instance &I,
                                   const Slave2Variables &var, const MasterVariables& master_var,
-                                  bool& need_to_enrich);
+                                  bool& need_to_enrich, unsigned int cluster_index);

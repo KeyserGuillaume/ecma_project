@@ -20,6 +20,6 @@ public:
     IloArray<IloNumArray> l;
     std::vector<std::pair<float, float> > coordinates;
 
-    Instance(const IloEnv &env, char filename[]);
+    Instance(const IloEnv &env, const char* filename);
     void print_distances() const;
 };
