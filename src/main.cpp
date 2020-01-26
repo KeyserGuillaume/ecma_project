@@ -1,6 +1,7 @@
 #include "Instance.h"
 #include "Dualization.h"
 #include "cutting_plane.h"
+#include "branch_cut.h"
 
 #include <iostream>
 
@@ -25,7 +26,7 @@ int main (int argc, char* argv[]){
    } else if (method == "CUTTING_PLANES") {
       solve_problem_with_cutting_planes(env, I);
    } else if (method == "BRANCH_AND_CUT") {
-
+      solve_problem_with_branch_cut(env, I);
    } else if (method == "HEURISTIC") {
 
    } else {

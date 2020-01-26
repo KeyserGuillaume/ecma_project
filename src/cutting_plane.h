@@ -25,9 +25,9 @@ public:
 void solve_problem_with_cutting_planes(IloEnv &env, const Instance &I);
 IloModel get_master_model(IloEnv &env, const Instance& I, const std::vector<IloArray<IloNumArray>> U1,
                           const std::vector<IloNumArray> U2, const MasterVariables &var);
-IloArray<IloNumArray> solve_slave_problem_1(const IloEnv &env, IloCplex master_cplex, const Instance &I,
-                                            const Slave1Variables &var, const MasterVariables& master_var,
-                                            bool& need_to_enrich);
-IloNumArray solve_slave_problem_2(const IloEnv &env, IloCplex master_cplex, const Instance &I,
-                                  const Slave2Variables &var, const MasterVariables& master_var,
+IloArray<IloNumArray> solve_slave_problem_1(const IloEnv &env, const Instance &I,
+                                            const Slave1Variables &var, const IloArray<IloNumArray>& y,
+                                            const IloNum& z, bool& need_to_enrich);
+IloNumArray solve_slave_problem_2(const IloEnv &env, const Instance &I,
+                                  const Slave2Variables &var, const IloArray<IloNumArray>& x,
                                   bool& need_to_enrich, unsigned int cluster_index);

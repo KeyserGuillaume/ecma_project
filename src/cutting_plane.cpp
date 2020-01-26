@@ -37,6 +37,18 @@ void solve_problem_with_cutting_planes(IloEnv &env, const Instance &I) {
     double obj;
     bool enriching = true;
     unsigned int iter = 0;
+
+    IloArray<IloNumArray> y(env, I.n);
+    for (unsigned int i=0; i<I.n; i++) {
+        y[i] = IloNumArray(env, I.n);
+    }
+    IloArray<IloNumArray> x(env, I.n);
+    for (unsigned int i=0; i<I.n; i++) {
+        x[i] = IloNumArray(env, I.K);
+    }
+
+    IloNum z;
+
     while(enriching) {
         enriching = false;
         IloModel master_model = get_master_model(env, I, U1, U2, master_var);
@@ -50,8 +62,20 @@ void solve_problem_with_cutting_planes(IloEnv &env, const Instance &I) {
         obj = master_cplex.getObjValue();
         std::cout << "\tIter " << iter << "\t Obj " << master_cplex.getObjValue() << std::endl;
 
+        for (unsigned int i=0; i<I.n; i++) {
+            for (unsigned int j=i+1; j<I.n; j++) {
+                y[i][j] = master_cplex.getValue(master_var.y[i][j]);
+            }
+        }
+        for (unsigned int i=0; i<I.n; i++) {
+            for (unsigned int k=0; k<I.K; k++) {
+                x[i][k] = master_cplex.getValue(master_var.x[i][k]);
+            }
+        }
+        z = master_cplex.getValue(master_var.z);
+
         bool enriching1 = true;
-        IloArray<IloNumArray> delta1 = solve_slave_problem_1(env, master_cplex, I, slave1_var, master_var, enriching1);
+        IloArray<IloNumArray> delta1 = solve_slave_problem_1(env, I, slave1_var, y, z, enriching1);
         if (enriching1) {// set by line above
             U1.push_back(delta1);
             enriching = true;
@@ -60,7 +84,7 @@ void solve_problem_with_cutting_planes(IloEnv &env, const Instance &I) {
 
         for (unsigned int k=0; k<I.K;k++) {
             bool enriching2 = true;
-            IloNumArray delta2 = solve_slave_problem_2(env, master_cplex, I, slave2_var, master_var, enriching2, k);
+            IloNumArray delta2 = solve_slave_problem_2(env, I, slave2_var, x, enriching2, k);
             if (enriching2) { // set by line above
                 U2.push_back(delta2);
                 enriching = true;
@@ -125,21 +149,20 @@ IloModel get_master_model(IloEnv &env, const Instance& I, const std::vector<IloA
 }
 
 
-IloArray<IloNumArray> solve_slave_problem_1(const IloEnv &env, IloCplex master_cplex, const Instance &I,
-                                            const Slave1Variables &var, const MasterVariables& master_var,
-                                            bool& need_to_enrich){
+IloArray<IloNumArray> solve_slave_problem_1(const IloEnv &env, const Instance &I,
+                                            const Slave1Variables &var, const IloArray<IloNumArray>& y,
+                                            const IloNum& z, bool& need_to_enrich){
     IloModel model(env);
 
     // objective
     IloExpr obj(env);
     for (unsigned int i = 0; i < I.n; i++) {
         for (unsigned int j = i + 1; j < I.n; j++) {
-            obj += var.delta1[i][j] * (I.lh[i] + I.lh[j]) * master_cplex.getValue(master_var.y[i][j]);
+            obj += var.delta1[i][j] * (I.lh[i] + I.lh[j]) * y[i][j];
         }
     }
     model.add(IloMaximize(env, obj));
     obj.end();
-
     // constraints
     IloExpr expr(env);
     for (unsigned int i = 0; i < I.n; i++)
@@ -147,12 +170,10 @@ IloArray<IloNumArray> solve_slave_problem_1(const IloEnv &env, IloCplex master_c
             expr += var.delta1[i][j];
     model.add(expr <= I.L);
     expr.end();
-
     IloCplex slave1_cplex(model);
     slave1_cplex.setOut(env.getNullStream());
     slave1_cplex.solve();
-
-    if (slave1_cplex.getObjValue() <= master_cplex.getValue(master_var.z)) {
+    if (slave1_cplex.getObjValue() <= z) {
         need_to_enrich = false;
         return IloArray<IloNumArray>(0);
     } else {
@@ -167,14 +188,14 @@ IloArray<IloNumArray> solve_slave_problem_1(const IloEnv &env, IloCplex master_c
     }
 }
 
-IloNumArray solve_slave_problem_2(const IloEnv &env, IloCplex master_cplex, const Instance &I,
-                                            const Slave2Variables &var, const MasterVariables& master_var,
+IloNumArray solve_slave_problem_2(const IloEnv &env, const Instance &I,
+                                            const Slave2Variables &var, const IloArray<IloNumArray>& x,
                                             bool& need_to_enrich, unsigned int cluster_index) {
 
     IloModel model(env);
     IloExpr obj(env);
     for (unsigned int i = 0; i < I.n; i++) {
-        obj += I.w_v[i] * (1 + var.delta2[i]) * master_cplex.getValue(master_var.x[i][cluster_index]);
+        obj += I.w_v[i] * (1 + var.delta2[i]) * x[i][cluster_index];
     }
     model.add(IloMaximize(env, obj));
     obj.end();
